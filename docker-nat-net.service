@@ -1,0 +1,15 @@
+[Unit]
+Description=Apply custom nat rules to docker network
+After=docker.service
+BindsTo=docker.service
+ReloadPropagatedFrom=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/docker-nat-net.sh up
+ExecStop=/usr/local/bin/docker-nat-net.sh down 
+ExecReload=/usr/local/bin/docker-nat-net.sh reload
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
