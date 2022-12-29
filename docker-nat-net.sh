@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 CONFIG_FILE=/etc/docker-nat-net.ini
 CONFIG_FILE2=docker-nat-net.ini
@@ -68,6 +68,9 @@ parse_config()
 	CB=${1}
 	while IFS=, read -r net ip
 	do
+		[[ ${net}  =~ ^#.* ]] && continue
+		[[ -z ${net} ]] && continue
+
 		if [ -z ${CB} ]; then
 			echo network ${net} ${ip}
 		else
