@@ -24,6 +24,7 @@ up_network()
 {
 	NET_NAME=${1}
 	PIP=${2}
+	MARK=${3}
 
 	BR_SUBNET=$(docker network inspect ${NET_NAME} | jq -r '.[].IPAM.Config[].Subnet')
 	if [ -z $BR_SUBNET ]; then
@@ -36,8 +37,14 @@ up_network()
 		BR_IF=$(docker network inspect ${NET_NAME}| jq -r '.[].Id' | awk '{print "br-"substr ($0, 0, 12)}')
 	fi
 
-	echo ${NET_NAME} ${BR_SUBNET} ${BR_IF}
+	echo ${NET_NAME} ${BR_SUBNET} ${BR_IF} ${MARK}
 	/usr/sbin/iptables -t nat -A POSTROUTING -s ${BR_SUBNET} ! -o ${BR_IF} -j SNAT --to-source ${PIP} 
+
+	if [ ! -z ${MARK} ]; then
+		/usr/sbin/iptables -t mangle -A PREROUTING -s ${BR_SUBNET}  -j MARK --set-mark ${MARK}
+		echo /usr/sbin/iptables -t mangle -A PREROUTING -s ${BR_SUBNET}  -j MARK --set-mark ${MARK}
+	fi
+
 	/usr/sbin/iptables -t nat -A DOCKER -i ${BR_IF} -j RETURN
 }
 
@@ -60,21 +67,27 @@ down_network()
 		echo /usr/sbin/iptables -t nat $ARGS
 		/usr/sbin/iptables -t nat $ARGS
 	done
+
+	/usr/sbin/iptables  -t mangle -S | grep ${BR_SUBNET} | while read -r line ; do
+		ARGS=$(echo $line | sed 's/^-A/-D/')
+		echo /usr/sbin/iptables -t mangle $ARGS
+		/usr/sbin/iptables -t mangle $ARGS
+	done
 }
 
 
 parse_config()
 {
 	CB=${1}
-	while IFS=, read -r net ip
+	while IFS=, read -r net ip mark
 	do
 		[[ ${net}  =~ ^#.* ]] && continue
 		[[ -z ${net} ]] && continue
 
 		if [ -z ${CB} ]; then
-			echo network ${net} ${ip}
+			echo network ${net} ${ip} ${mark}
 		else
-			${CB} ${net} ${ip}
+			${CB} ${net} ${ip} ${mark}
 		fi
 	done < ${CONFIG_FILE}
 }
