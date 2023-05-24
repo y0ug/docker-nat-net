@@ -13,7 +13,7 @@ setup()
 		systemctl restart docker-nat-net.service
 	else	
 		cp $BASEDIR/docker-nat-net.openrc /etc/init.d/docker-nat-net
-		chmod +x $/etc/init.d/docker-nat-net
+		chmod +x /etc/init.d/docker-nat-net
 		rc-update add docker-nat-net default
 		rc-update docker-nat-net start
 	fi	
