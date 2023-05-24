@@ -1,0 +1,15 @@
+#!/sbin/openrc-run
+
+depend() {
+        after docker
+        provide docket-net-nat
+}
+
+start() {
+        /bin/ash /usr/local/bin/docker-nat-net.sh up
+}
+
+stop() {
+        /bin/ash /usr/local/bin/docker-nat-net.sh down
+}
+

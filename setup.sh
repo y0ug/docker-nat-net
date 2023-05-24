@@ -5,17 +5,31 @@ setup()
 {
 	cp $BASEDIR/docker-nat-net.sh /usr/local/bin/docker-nat-net.sh
 	chmod +x /usr/local/bin/docker-nat-net.sh
-	cp $BASEDIR/docker-nat-net.service /etc/systemd/system/docker-nat-net.service
 	touch /etc/docker-nat-net.ini
-	systemctl daemon-reload
+	if type systemctl > /dev/null; then
+		cp $BASEDIR/docker-nat-net.service /etc/systemd/system/docker-nat-net.service
+		systemctl daemon-reload
+		systemctl enable
+		systemctl restart docker-nat-net.service
+	else	
+		cp $BASEDIR/docker-nat-net.openrc /etc/init.d/docker-nat-net
+		chmod +x $/etc/init.d/docker-nat-net
+		rc-update add docker-nat-net default
+		rc-update docker-nat-net start
+	fi	
 }
 
 uninstall()
 {
-	systemctl stop docker-nat-net
-	systemctl disable docker-nat-net
-	rm /etc/systemd/system/docker-nat-net.service
-	systemctl daemon-reload
+	if type systemctl > /dev/null; then
+		systemctl stop docker-nat-net.service
+		systemctl disable docker-nat-net
+		rm /etc/systemd/system/docker-nat-net.service
+		systemctl daemon-reload
+	else
+		rc-update delete docker-nat-net -a
+		rm /etc/init.d/docker-nat-net
+	fi
 	rm /usr/local/bin/docker-nat-net.sh
 }
 
