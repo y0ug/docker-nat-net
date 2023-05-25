@@ -2,6 +2,16 @@
 
 CONFIG_FILE=/etc/docker-nat-net.ini
 CONFIG_FILE2=docker-nat-net.ini
+IPTABLES_BIN=/usr/sbin/iptables
+
+if [ ! -e ${IPTABLES_BIN} ]; then
+	IPTABLES_BIN=/sbin/iptables
+	if [ ! -e ${IPTABLES_BIN} ]; then
+		echo "iptables not found" >&2
+		exit 1
+	fi
+fi
+
 if [ ! -f ${CONFIG_FILE} ]; then
 	if [ -f ${CONFIG_FILE2} ]; then
 		CONFIG_FILE=${CONFIG_FILE2}
@@ -37,8 +47,8 @@ up_network()
 	fi
 
 	echo ${NET_NAME} ${BR_SUBNET} ${BR_IF}
-	/usr/sbin/iptables -t nat -A POSTROUTING -s ${BR_SUBNET} ! -o ${BR_IF} -j SNAT --to-source ${PIP} 
-	/usr/sbin/iptables -t nat -A DOCKER -i ${BR_IF} -j RETURN
+	${IPTABLES_BIN} -t nat -A POSTROUTING -s ${BR_SUBNET} ! -o ${BR_IF} -j SNAT --to-source ${PIP} 
+	${IPTABLES_BIN} -t nat -A DOCKER -i ${BR_IF} -j RETURN
 }
 
 down_network()
@@ -55,10 +65,10 @@ down_network()
 		BR_IF=$(docker network inspect ${NET_NAME}| jq -r '.[].Id' | awk '{print "br-"substr ($0, 0, 12)}')
 	fi
 
-	/usr/sbin/iptables  -t nat -S | grep ${BR_IF} | grep -v 'DNAT' | while read -r line ; do
+	${IPTABLES_BIN}  -t nat -S | grep ${BR_IF} | grep -v 'DNAT' | while read -r line ; do
 		ARGS=$(echo $line | sed 's/^-A/-D/')
-		echo /usr/sbin/iptables -t nat $ARGS
-		/usr/sbin/iptables -t nat $ARGS
+		echo ${IPTABLES_BIN} -t nat $ARGS
+		${IPTABLES_BIN} -t nat $ARGS
 	done
 }
 
