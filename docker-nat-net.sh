@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 
-CONFIG_FILE=/etc/docker-nat-net.ini
-CONFIG_FILE2=docker-nat-net.ini
+CONFIG_FILE2=/etc/docker-nat-net.ini
+CONFIG_FILE=docker-nat-net.ini
 IPTABLES_BIN=/usr/sbin/iptables
 
 if [ ! -e ${IPTABLES_BIN} ]; then
@@ -76,17 +76,21 @@ down_network()
 parse_config()
 {
 	CB=${1}
+	grep -v '^#' ${CONFIG_FILE} |
 	while IFS=, read -r net ip
 	do
-		[[ ${net}  =~ ^#.* ]] && continue
-		[[ -z ${net} ]] && continue
+		# not working on ash
+		#if [ ${net}  =~ ^#.* ]; then continue; fi
+		if [ -z ${net} ]; then continue; fi
 
 		if [ -z ${CB} ]; then
 			echo network ${net} ${ip}
 		else
 			${CB} ${net} ${ip}
 		fi
-	done < ${CONFIG_FILE}
+	done
+	#done < ${CONFIG_FILE}
+	#done < <(grep -v '^#' ${CONFIG_FILE})
 }
 
 case "$1" in
