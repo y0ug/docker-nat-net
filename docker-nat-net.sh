@@ -46,7 +46,7 @@ up_network()
 		BR_IF=$(docker network inspect ${NET_NAME}| jq -r '.[].Id' | awk '{print "br-"substr ($0, 0, 12)}')
 	fi
 
-	echo ${NET_NAME} ${BR_SUBNET} ${BR_IF}
+	echo ${NET_NAME} ${BR_SUBNET} ${BR_IF} ${PIP}
 	${IPTABLES_BIN} -t nat -A POSTROUTING -s ${BR_SUBNET} ! -o ${BR_IF} -j SNAT --to-source ${PIP} 
 	${IPTABLES_BIN} -t nat -A DOCKER -i ${BR_IF} -j RETURN
 }
