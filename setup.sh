@@ -15,7 +15,7 @@ setup()
 		cp $BASEDIR/docker-nat-net.openrc /etc/init.d/docker-nat-net
 		chmod +x /etc/init.d/docker-nat-net
 		rc-update add docker-nat-net default
-		service start docker-nat-net 
+		service docker-nat-net start
 	fi	
 }
 
@@ -27,7 +27,7 @@ uninstall()
 		rm /etc/systemd/system/docker-nat-net.service
 		systemctl daemon-reload
 	else
-		service stop docker-nat-net 
+		service docker-nat-net stop
 		rc-update delete docker-nat-net -a
 		rm /etc/init.d/docker-nat-net
 	fi
