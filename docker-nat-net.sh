@@ -35,7 +35,7 @@ up_network()
 	NET_NAME=${1}
 	PIP=${2}
 
-	BR_SUBNET=$(docker network inspect ${NET_NAME} | jq -r '.[].IPAM.Config[].Subnet')
+	BR_SUBNET=$(docker network inspect ${NET_NAME} | jq -r '.[].IPAM.Config[0].Subnet')
 	if [ -z $BR_SUBNET ]; then
 		echo Network ${NET_NAME} doesn\'t exist >&2
 		return 1
@@ -54,7 +54,7 @@ up_network()
 down_network()
 {
 	NET_NAME=${1}
-	BR_SUBNET=$(docker network inspect ${NET_NAME} | jq -r '.[].IPAM.Config[].Subnet')
+	BR_SUBNET=$(docker network inspect ${NET_NAME} | jq -r '.[].IPAM.Config[0].Subnet')
 	if [ -z $BR_SUBNET ]; then
 		echo Network ${NET_NAME} doesn\'t exist >&2
 		return 1
