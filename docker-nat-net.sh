@@ -26,8 +26,11 @@ fi
 create_network()
 {
 	NET_NAME=${1}
+	PIP=${2}
+	PIP6=${3}
 	docker network create --attachable \
 		--opt 'com.docker.network.bridge.enable_ip_masquerade=false'\
+		--ipv6 \
 		${NET_NAME}
 		#--opt "com.docker.network.bridge.name=${NET_NAME}"\
 }
