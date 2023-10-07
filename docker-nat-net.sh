@@ -10,7 +10,7 @@ if [[ ! -e ${IPTABLES_BIN} ]]; then
 	IP6TABLES_BIN=/sbin/ip6tables
 	if [ ! -e ${IPTABLES_BIN} ]; then
 		echo "iptables not found" >&2
-		#exit 1
+		exit 1
 	fi
 fi
 
@@ -22,6 +22,22 @@ if [[ ! -f ${CONFIG_FILE} ]]; then
 		exit 1
 	fi
 fi
+
+docker_wait()
+{
+	while :
+	do
+		docker info >/dev/null 2>&1
+		if [ $? -eq 0 ]; then
+			echo "docker is running."
+			break
+		else
+			echo "waiting for docker..."
+			sleep 2
+		fi
+	done
+}
+
 
 create_network()
 {
@@ -131,6 +147,8 @@ parse_config()
 	#done < ${CONFIG_FILE}
 	#done < <(grep -v '^#' ${CONFIG_FILE})
 }
+
+docker_wait
 
 case "$1" in
 'up')
